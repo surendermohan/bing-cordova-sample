@@ -24,52 +24,61 @@
   <meta name="msapplication-tap-highlight" content="no" />
   <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
   <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
-  <!--link rel="stylesheet" type="text/css" href="css/index.css" /-->
-  <link rel="stylesheet" href="css/jquery.jsonview.css" />
-  <link href="bing.css" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
   <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
-  <title>Bing Cordova Sample</title>
+  <script type="text/javascript" src="js/jquery.mobile-1.4.0.min.js"></script>
+  <title>Cordova Sample</title>
 </head>
 <body>
   <div class="app">
-    <h1>Bing Cordova Sample</h1>
+    <h1>Cordova Sample</h1>
     <div id="deviceready" class="blink" style="display:none;">
       <p class="event listening">Connecting to Device</p>
       <p class="event received">Device is Ready</p>
     </div>
   </div>
-  <div id="wrapper">
-    <h1>Bing Search Tester (Ajax)</h1>
-    <form id="my_form">
-      <label for="service_op">Service Operation</label>
-      <input name="service_op" type="radio" value="Web" checked /> Web
-      <input name="service_op" type="radio" value="Image" /> Image
-      <label for="query">Query</label>
-      <input id="query" name="query" type="text" size="60" /><br /><br />
-      <input id="bt_search" name="bt_search" type="button" value="Search" />
-    </form>
-    <!-- Results will be placed into the following container. -->
-    <div id="results"></div>
+
+  <div data-role="page" id="home_page">
+    <div data-role="header" data-theme="a">
+      Cordova Sample
+    </div>
+    <!-- Header -->
+    <div data-role="content">
+      <ul data-role="listview" data-inset="true" id="entity"></ul>
+    </div>
   </div>
-
-  <h2>Data</h2>
-  <button id="collapse-btn">Collapse</button>
-  <button id="expand-btn">Expand</button>
-  <button id="toggle-btn">Toggle</button>
-  <button id="toggle-level1-btn">Toggle level1</button>
-  <button id="toggle-level2-btn">Toggle level2</button>
-  <div id="json"></div>
-
+  <div data-role="page" id="entity_page">
+    <div data-role="header" data-theme="a">
+      <a href="#home_page">Back</a>
+      Entity Details
+    </div>
+    <!-- Header -->
+    <div data-role="content">
+      <div data-role="collapsible-set" data-theme="b" data-content-theme="d" data-inset="false">
+        <div data-role="collapsible">
+          <h2>Types</h2>
+          <ul data-role="listview" data-autodividers="true" data-theme="d" data-divider-theme="d" id="types"></ul>
+        </div>
+        <div data-role="collapsible">
+          <h2>Properties</h2>
+          <ul data-role="listview" data-theme="d" data-divider-theme="d" id="properties"></ul>
+        </div>
+        <div data-role="collapsible">
+          <h2>Nothing</h2>
+          <ul data-role="listview" data-autodividers="true" data-theme="d" data-divider-theme="d"></ul>
+        </div>
+      </div>
+    </div>
+  </div>
   <script type="text/javascript" src="cordova.js"></script>
   <script type="text/javascript" src="js/index.js"></script>
-  <script type="text/javascript" src="js/jquery.jsonview.js"></script>
-  <script type="text/javascript" src="js/bing.js"></script>
   <script type="text/javascript" src="samplejson/heyguy.js"></script>
-  <script type="text/javascript" src="samplejson/redstone.el.gaucho.js"></script>
-  <script type="text/javascript" src="samplejson/redstone.keyword.thai+ginger.js"></script>
-  <script type="text/javascript" src="samplejson/redstone.tom.cruise.js"></script>
+  <script type="text/javascript" src="samplejson/Sample1.js"></script>
+  <script type="text/javascript" src="samplejson/Sample2.js"></script>
 
   <script type="text/javascript">
+    var jsonData = jsonSample2;
+
     $(function () {
       var parentElement = document.getElementById('deviceready');
       var listeningElement = parentElement.querySelector('.listening');
@@ -78,52 +87,56 @@
       listeningElement.setAttribute('style', 'display:none;');
       receivedElement.setAttribute('style', 'display:block;');
       console.log("ready!");
-
-      //$("#json").JSONView(json);
-
-      //$("#json-collapsed").JSONView(json, { collapsed: true, nl2br: true, recursive_collapser: true });
-
-      // Attaches a click handler to the search button.
-      $('#bt_search').click(function (e) {
-        e.preventDefault();
-
-        // Clear the results div.
-        $('#results').empty();
-
-        var query = $('#query').val();
-        var serviceOp = $('input[name=service_op]:checked', '#my_form').val();
-
-        if (query)
-          search(query, serviceOp);
-      });
-
-
-      $('#collapse-btn').on('click', function () {
-        $('#json').JSONView('collapse');
-      });
-
-      $('#expand-btn').on('click', function () {
-        $('#json').JSONView('expand');
-      });
-
-      $('#toggle-btn').on('click', function () {
-        $('#json').JSONView('toggle');
-      });
-
-      $('#toggle-level1-btn').on('click', function () {
-        $('#json').JSONView('toggle', 1);
-      });
-
-      $('#toggle-level2-btn').on('click', function () {
-        $('#json').JSONView('toggle', 2);
-      });
-
-      //readJsonFromUrl('http://localhost:52361/samplejson/heyguy.txt');
-      //readJsonFromUrl('https://graph.facebook.com/btaylor');
-
       //$('#json').JSONView(jsonHeyGuy);
-      $('#json').JSONView(jsonElGaucho);
+      // get the json data from URL
     });
+
+    $(document).on("pageshow", "#home_page", function () {
+      // Check if entities is defined OR entity is defined
+      if (jsonData.answerResponses[0].entities !== 'undefined') {
+        getEntityDisplay(jsonData.answerResponses[0].entities);
+      }
+      else if (jsonData.answerResponses[0].entity !== 'undefined') {
+        getEntityDisplay(jsonData.answerResponses);
+      } else {
+        alert('wrong json');
+      }
+    });
+
+    function getEntityDisplay(dataEntity) {
+      var output = '';
+
+      $.each(dataEntity, function (index, value) {
+        console.log(value);
+        output += '<li><a href="#entity_page?index=' + index + '">' + value.id + '</a><span class="ui-li-count">Rank: ' + value.rank + '</span></li>';
+      });
+      $('#entity').html(output).listview("refresh");
+    }
+
+    $(document).on("pageshow", "#entity_page", function () {
+      var entity_index = 0;
+
+      getEntityTypesDisplay(jsonData.answerResponses[entity_index].entity.types);
+      getEntityPropertiesDisplay(jsonData.answerResponses[entity_index].entity.properties);
+    });
+
+    function getEntityTypesDisplay(dataTypes) {
+      var output = '';
+      $.each(dataTypes, function (index, value) {
+        console.log(value);
+        output += '<li>' + value.name + '<span class="ui-li-count">Contexts: ' + value.contexts.length + '</span></li>';
+      });
+      $('#types').html(output).listview("refresh");
+    }
+
+    function getEntityPropertiesDisplay(dataProperties) {
+      var output = '';
+      $.each(dataProperties, function (index, value) {
+        console.log(value);
+        output += '<li>' + value.name + '<span class="ui-li-count">Values: ' + value.values.length + '</span></li>';
+      });
+      $('#properties').html(output).listview("refresh");
+    }
 
     function readJsonFromUrl(url) {
       console.log('download url: ' + url);
