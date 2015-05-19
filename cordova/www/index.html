@@ -25,6 +25,7 @@
   <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
   <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
   <link rel="stylesheet" href="css/jquery.mobile-1.4.0.min.css" />
+  <link rel="stylesheet" href="css/jquery.jsonview.css" />
   <script type="text/javascript" src="js/jquery-1.11.2.min.js"></script>
   <script type="text/javascript" src="js/jquery.mobile-1.4.0.min.js"></script>
   <title>Cordova Sample</title>
@@ -45,6 +46,16 @@
     <!-- Header -->
     <div data-role="content">
       <ul data-role="listview" data-inset="true" id="entity"></ul>
+      <div><a href="#tree_view"  data-role="button">Tree View</a></div>
+    </div>
+  </div>
+  <div data-role="page" id="tree_view">
+    <div data-role="header" data-theme="a">
+      Tree View
+    </div>
+    <!-- Header -->
+    <div data-role="content">
+      <div id="jsonTreeView"></div>
     </div>
   </div>
   <div data-role="page" id="entity_page">
@@ -54,30 +65,26 @@
     </div>
     <!-- Header -->
     <div data-role="content">
-      <div data-role="collapsible-set" data-theme="b" data-content-theme="d" data-inset="false">
+      <div data-role="collapsible-set" data-content-theme="d" data-inset="false">
         <div data-role="collapsible">
           <h2>Types</h2>
-          <ul data-role="listview" data-autodividers="true" data-theme="d" data-divider-theme="d" id="types"></ul>
+          <ul data-role="listview" data-divider-theme="d" id="types"></ul>
         </div>
         <div data-role="collapsible">
           <h2>Properties</h2>
-          <ul data-role="listview" data-theme="d" data-divider-theme="d" id="properties"></ul>
+          <ul data-role="listview" data-divider-theme="d" id="properties"></ul>
         </div>
-        <div data-role="collapsible">
-          <h2>Nothing</h2>
-          <ul data-role="listview" data-autodividers="true" data-theme="d" data-divider-theme="d"></ul>
-        </div>
-      </div>
     </div>
   </div>
   <script type="text/javascript" src="cordova.js"></script>
   <script type="text/javascript" src="js/index.js"></script>
+  <script type="text/javascript" src="js/jquery.jsonview.js"></script>
   <script type="text/javascript" src="samplejson/heyguy.js"></script>
   <script type="text/javascript" src="samplejson/Sample1.js"></script>
   <script type="text/javascript" src="samplejson/Sample2.js"></script>
 
   <script type="text/javascript">
-    var jsonData = jsonSample2;
+    var jsonData = jsonSample1;
 
     $(function () {
       var parentElement = document.getElementById('deviceready');
@@ -90,27 +97,32 @@
       //$('#json').JSONView(jsonHeyGuy);
       // get the json data from URL
     });
+    
+    $(document).on("pageshow", "#tree_view", function () {
+      $('#jsonTreeView').JSONView(jsonData);
+    });
 
     $(document).on("pageshow", "#home_page", function () {
       // Check if entities is defined OR entity is defined
-      if (jsonData.answerResponses[0].entities !== 'undefined') {
-        getEntityDisplay(jsonData.answerResponses[0].entities);
-      }
-      else if (jsonData.answerResponses[0].entity !== 'undefined') {
-        getEntityDisplay(jsonData.answerResponses);
+      output = '';
+      if (jsonData.answerResponses[0].entities !== undefined) {
+        // getEntityDisplay(jsonData.answerResponses[0].entities);
+        $.each(jsonData.answerResponses[0].entities, function (index, value) { 
+          output += getEntityDisplay(index, value);
+        });
+      } else if (jsonData.answerResponses[0].entity !== undefined) {
+        output += getEntityDisplay(0, jsonData.answerResponses[0].entity);
       } else {
         alert('wrong json');
       }
+      $('#entity').html(output).listview("refresh");
     });
 
-    function getEntityDisplay(dataEntity) {
+    function getEntityDisplay(index, value) {
       var output = '';
-
-      $.each(dataEntity, function (index, value) {
-        console.log(value);
-        output += '<li><a href="#entity_page?index=' + index + '">' + value.id + '</a><span class="ui-li-count">Rank: ' + value.rank + '</span></li>';
-      });
-      $('#entity').html(output).listview("refresh");
+      console.log(value);
+      output += '<li><a href="#entity_page?index=' + index + '">' + value.id + '</a><span class="ui-li-count">Rank: ' + value.rank + '</span></li>';
+      return output;
     }
 
     $(document).on("pageshow", "#entity_page", function () {
@@ -133,7 +145,21 @@
       var output = '';
       $.each(dataProperties, function (index, value) {
         console.log(value);
-        output += '<li>' + value.name + '<span class="ui-li-count">Values: ' + value.values.length + '</span></li>';
+        if (value.values.length < 1) {
+          output += '<li> NoValueType"' + value.name + '"="' + value.values.length +'"</li>';
+        } else {
+          for (i=0; i < value.values.length; i++) {
+            output += '<li>' + value.values[i].type + '"' + value.name + '"="';
+            if (value.values[i].value !== undefined) {
+              output += value.values[i].value;
+            } else if (value.values[i].id !== undefined) {
+              output += value.values[i].id;
+            } else {
+              output += 'Unknown';
+            }
+            output += '"</li>';            
+          }
+        }
       });
       $('#properties').html(output).listview("refresh");
     }
